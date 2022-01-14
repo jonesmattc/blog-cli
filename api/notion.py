@@ -2,6 +2,11 @@ from datetime import date
 
 import requests
 
+def get_headers(api_key):
+    return {
+        "Authorization": f"Bearer {api_key}",
+        "Notion-Version": "2021-08-16"
+    }
 
 def get_journal_database(search, api_key):
     search_result = requests.post("https://api.notion.com/v1/search", json={
@@ -10,10 +15,7 @@ def get_journal_database(search, api_key):
             "direction": "ascending",
             "timestamp": "last_edited_time"
         }
-    }, headers={
-        'Authorization': f'Bearer {api_key}',
-        'Notion-Version': '2021-08-16'
-    })
+    }, headers=get_headers(api_key))
 
     if not search_result.ok:
         print("Unable to access Notion API. Please check that your API key is configured correctly")
@@ -41,7 +43,6 @@ def get_journal_database(search, api_key):
 
 def get_current_months_journal(db_id, api_key):
     current_month_title = date.today().strftime('%Y-%b')
-    print(current_month_title, db_id)
     query_result = requests.post(f"https://api.notion.com/v1/databases/{db_id}/query", json={
         "filter": {
             "property": "title",
@@ -55,10 +56,7 @@ def get_current_months_journal(db_id, api_key):
                 "property": "Name"
             }
         ]
-    }, headers={
-        'Authorization': f'Bearer {api_key}',
-        'Notion-Version': '2021-08-16'
-    })
+    }, headers=get_headers(api_key))
 
     if not query_result.ok:
         print("Unable to access Notion API. Please check that your API key is configured correctly")
@@ -75,10 +73,7 @@ def get_current_months_journal(db_id, api_key):
 
 
 def create_new_journal_page(title, parent_db_id, api_key):
-    create_result = requests.post(f"https://api.notion.com/v1/pages", headers={
-        "Authorization": f"Bearer {api_key}",
-        "Notion-Version": "2021-08-16"
-    }, json={
+    create_result = requests.post(f"https://api.notion.com/v1/pages", headers=get_headers(api_key), json={
         "parent": {
             "type": "database_id", "database_id": parent_db_id
         },
@@ -111,10 +106,7 @@ def create_new_journal_page(title, parent_db_id, api_key):
 
 
 def append_entry(contents, api_key, page_id):
-    append_result = requests.patch(f"https://api.notion.com/v1/blocks/{page_id}/children", headers={
-        "Authorization": f"Bearer {api_key}",
-        "Notion-Version": "2021-08-16"
-    }, json={
+    append_result = requests.patch(f"https://api.notion.com/v1/blocks/{page_id}/children", headers=get_headers(api_key), json={
         "children": [{
             "object": "block",
             "type": "paragraph",
